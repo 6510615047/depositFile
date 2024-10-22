@@ -50,6 +50,38 @@ git commit --amend --date="1987-08-03" ใช้เพื่อแก้ไข c
 git reflog เป็นคำสั่งใน Git ที่ใช้สำหรับแสดงประวัติการอ้างอิง (reference) ของ HEAD ซึ่งช่วยให้คุณสามารถดูการเปลี่ยนแปลงที่เกิดขึ้นกับ HEAD และ branch ต่าง ๆ ได้ในช่วงเวลาที่ผ่านมา นี่คือรายละเอียดเกี่ยวกับการใช้งานคำสั่งนี้:
 
 
+complete the exercises
+(latest 2 tag : git tag --sort=-creatordate | head -n 2)
+(first 2 tag : git tag --sort=creatordate | head -n 2)
+(requirement first add : git log -- requirements.txt)
+(requirement first commit : git log -- requirements.txt)
+(how many commit : git log --oneline -- requirements.txt)
+(name of author that latest commit on README.md : git log -1 -- README.md)
+(commit id of first merge pull request : git log --merges)
+(commit message of commit id : git log e68a68c97c136b75a963c9d5e77d552622384141)
+(file that mod in tag : git diff --name-only 0.100.0^ 0.100.0)
+(file that mod in commit id "xxx" write diff : git diff 46f5091c9f2e3c029d4aaecb43f95d5e01df6f30)
+(commit id when merge typing doc : git log --merges typing-doc)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 เพิ่ม
 Task2
 cd /d/working
