@@ -1,0 +1,35 @@
+command run container : ตาม CMD ใน Dockerfile
+สร้าง image : docker build -t ชื่อimage:tag .
+สร้าง container : docker run -d --name ชื่อcontainer -p hostport:8000 ชื่อimage:tag
+ดูขนาดอง image : docker images ชื่อimage:tag
+url ในการดู app : http://localhost:<host port>/
+หยุด container : docker stop <ชื่อcontainer>
+ลบ container : docker rm <ชื่อcontainer>
+เช็ค image : docker image ls
+เช็ค name container ที่สร้างโดย compose : docker compose ls  
+เช็ค network : docker network ls
+url จากที่ compose : http://localhost:<port อันแรกก่อน :>/ ใน compose file
+port num expose : port อันหลังใน compose file
+port num host : port อันแรกใน compose file
+แสดง containers ทั้งหมด : docker ps -a
+หยุด service ทั้งหมด : docker compose down
+
+run service :golang run /src/bin/backend
+alpine run /usr/local/bin/backend
+no volume
+Proxy 6611:80
+app 8000:8000
+
+
+testing
+- run environment
+- install requirement
+- run app using : command like RM
+- build docker image : docker build -t fastapi-app .
+- run container : docker run -d --name test -p 7000:7000 fastapi-app
+
+สร้าง image : docker build -t ชื่อimage:tag .
+tag image docker hub : docker tag ชื่อimage:tag ชื่อdockerhub/f5:tagที่แสดงในdockerhub
+push docker hub : docker push ชื่อdockerhub/f5:tagที่แสดงในdockerhub
+
+
