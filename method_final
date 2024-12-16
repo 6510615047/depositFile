@@ -1,0 +1,212 @@
+git clone 
+rm -rf .git (ลบทุกอย่างที่เกี่ยวกับ git เช่น commit, branch)
+git init
+git config user.name "Jirawat Puengwongtrakul"
+git config user.email "6510615047@cn330"
+git branch -m main
+python -m venv venv
+source venv/Scripts/activate
+pip install -r requirements.txt
+pip list
+python main.py (run app)
+     Url : localhost:port
+     /docs
+     /redoc
+	ใน main.py
+	น่าจะใช้ตามที่เค้าให้มา ถ้าไม่ได้ลองเปลี่ยนดู
+	ใช้ code (จาก chat)
+	import uvicorn
+	if __name__ == "__main__":
+    		uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+	
+	จาก ex1 (ajarn)
+	import uvicorn
+	if __name__ == "__main__":
+   		uvicorn.run("app.main:app", host="0.0.0.0", reload = True)
+
+
+
+สร้าง .gitignore (ctrl+shift+p)
+     .gitattribute ใน vscode (ctrl+shift+p)
+สร้าง Dockerfile
+      แถบด้านบน docker workspace เลือกเรื่อยๆ
+      หรือ docker init
+	(ตัวอย่าง)
+	# ใช้ Python 3.12.5 เป็น base image
+	FROM python:3.12.5-alpine3.20
+
+	# ตั้งค่า working directory
+	WORKDIR /app
+	
+	RUN python -m venv venv
+	RUN source venv/bin/activate
+
+	# คัดลอกไฟล์ requirements.txt และติดตั้ง dependencies
+	COPY requirements.txt .
+	RUN pip install -r requirements.txt
+
+	# คัดลอกไฟล์ทั้งหมดไปที่ container
+	COPY . .
+
+	# เปิดพอร์ต 8000 (optional)
+	EXPOSE 8000
+
+	# คำสั่งสำหรับรันแอป
+	CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+	ex3(ajarn)
+	ใช้ docker init แก้แค่ตรงบรรทัดสุดท้ายเป็น
+	CMD uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+-----------------------------------------------------------------------
+important
+	# Use Python 3.12.0-slim as the base image
+	FROM python:3.12.0-slim
+
+	# Set the working directory inside the container
+	WORKDIR /app/
+
+	# Copy requirements.txt to the working directory
+	COPY requirements.txt /app/
+
+	# Install dependencies
+	RUN pip install --no-cache-dir -r requirements.txt
+
+	# Copy the application code into the container
+	COPY app/ .
+
+	# Expose port 7000 for the application
+	EXPOSE 7000
+
+	# Command to run the FastAPI application with auto-reload
+	# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7000", "--reload"]
+	CMD ["uvicorn", "--host", "0.0.0.0", "--port", "7000","--reload","main:app"]
+
+
+
+สร้าง .env สำหรับ database ใน ex3
+	## DB
+	DB_NAME=app
+	DB_USER=appuser
+	DB_PASSWORD=apppassword
+	DB_ROOT_PASSWORD=secret
+	DB_PORT=3306
+	DB_HOST=db  # service name
+------------------------------------------
+	ใน ex4 (ถาม chat)
+	DB_HOST=db                 #คือชื่อของบริการฐานข้อมูลที่ Docker Compose จะใช้
+	DB_USERNAME=root           #สามารถเปลี่ยนแปลงตามความต้องการ
+	DB_PASSWORD=password       #สามารถเปลี่ยนแปลงตามความต้องการ
+	DB_DATABASE=mydatabase     #สามารถเปลี่ยนแปลงตามความต้องการ
+*ดูจากไฟล์ db.py ว่าต้องใส่อะไรใน .env*
+
+
+สร้าง docker-compose.yml (จาก ex3)
+services:
+  app:
+    build:
+      context: .
+    env_file:
+      - .env
+    ports:
+      - 8000:8000
+
+  db:
+    image: mysql:5.7
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: ${DB_USER}
+      # You can use whatever password you like
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>     
+      - '3306:3306'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+      # Where our data will be persisted
+    volumes:
+      - my-db:/var/lib/mysql
+
+  pma:
+    image: phpmyadmin:5.2.1
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    ports:
+      - "8002:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+# Names our volume
+volumes:
+  my-db:
+----------------------------------------------------
+จาก ex4
+version: '3.8'				#optional (ไม่น่าใส่มั้ง)
+					#WORKDIR /app/,COPY app/ .,version 3.9
+services:                                                              #กำหนดบริการ เช่น mysql
+  db:                                   #ชื่อของบริการที่เป็นฐานข้อมูล MySQL
+    image: mysql:8.0                    #กำหนด Docker image ของ MySQL เวอร์ชัน 8.0 จาก Docker Hub (ถ้าเป็น MariaDB ก้แค่เปลี่ยน image)
+    environment:                        #กำหนดตัวแปรสภาพแวดล้อม
+      MYSQL_ROOT_PASSWORD: password     #กำหนดรหัสผ่านสำหรับผู้ใช้ root ของ MySQL
+      MYSQL_DATABASE: mydatabase        #กำหนดชื่อฐานข้อมูลเริ่มต้นที่ MySQL จะสร้างขึ้นเมื่อเริ่มต้นคอนเทนเนอร์
+    volumes:                            #กำหนด volume (พื้นที่เก็บข้อมูล) สำหรับฐานข้อมูล
+      - db_data:/var/lib/MySQL          #เก็บข้อมูลของฐานข้อมูลใน db_data volume เพื่อไม่ให้ข้อมูลหายไปเมื่อคอนเทนเนอร์ถูกลบ
+    ports:
+      - "3306:3306"                     #กำหนดให้พอร์ต 3306 (พอร์ตมาตรฐานของ MySQL)
+
+  server:                               #ชื่อของบริการที่เป็นเซิร์ฟเวอร์แอปพลิเคชันของคุณ ซึ่งจะเชื่อมต่อกับฐานข้อมูลที่กำหนดใน db (ชื่อ app ได้)
+    build:                              #กำหนดให้ Docker Compose สร้างภาพคอนเทนเนอร์จาก Dockerfile ที่อยู่ในโปรเจกต์นี้
+      context: .                        #ระบุว่าให้ใช้ไฟล์ Dockerfile จากโฟลเดอร์ปัจจุบัน
+    ports:
+      - "8000:8000"                     #แมปพอร์ต 8000 ในคอนเทนเนอร์กับพอร์ต 8000 ในเครื่องโฮสต์ ใช้สำหรับ FastAPI หรือ Uvicorn
+    env_file:				#กำหนดให้เซิร์ฟเวอร์ใช้ไฟล์ .env ซึ่งเก็บข้อมูลการตั้งค่าต่างๆ  (เช่น DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE)
+      - .env				#ระบุว่าใช้ไฟล์ .env จากโฟลเดอร์ปัจจุบัน
+    depends_on:				#กำหนดให้ server ขึ้นอยู่กับการทำงานของบริการ db ก่อน
+      - db				#Docker Compose จะพยายามเริ่มต้น db ก่อนแล้วค่อยเริ่มต้น server ซึ่งจะช่วยให้แน่ใจว่า server สามารถเชื่อมต่อกับฐานข้อมูล MySQL ได้เมื่อมันเริ่มทำงาน
+
+volumes:				#กำหนดชื่อของ volume ที่ใช้ในการเก็บข้อมูลฐานข้อมูล เพื่อให้ข้อมูลไม่หายเมื่อคอนเทนเนอร์ MySQL ถูกลบหรือรีสตาร์ท
+  db_data:				#db_data จะถูกเชื่อมต่อกับ /var/lib/mysql ในคอนเทนเนอร์ MySQL ซึ่งเป็นที่เก็บข้อมูลของ MySQL
+
+--------------------------------------------------------------------------------------------
+important
+
+services:
+  myapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:7000"
+
+
+
+docker image build -t ex1:v1 .  (docker image ls เช็ค)
+docker compose up -d หรือ docker run -d -p 8000:8000 ex1:v1 แทน แต่ควรใช้ compose
+
+Create repo in docker hub
+
+	สร้าง image ใหม่ที่จะ push
+	docker build -t wernatraa/ชื่อ repo .
+	docker push wernatraa/ชื่อ repo
+
+	ใช้ image เดิมเพื่อ push
+	docker image tag ชื่อimage:เลขtag wernatraa/ชื่อrepo:เลขtag
+	เช่น docker image tag ex3:v1 wernatraa/test3:v1
+
+	docker image push wernatraa/ชื่อrepo:เลขtag
+	docker image push wernatraa/test3:v1
+	*ถ้าไม่ใส่ tag จะเป็น latest
+
+
+
+
+
